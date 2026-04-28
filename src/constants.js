@@ -36,8 +36,8 @@ export const DESMOS_CURVES_STEP = 100
 export const VIDEO_FRAME_RATE = 30
 export const VIDEO_CODEC_PREFERENCES = ['video/webm; codecs=vp9', 'video/webm; codecs=vp8', 'video/webm', 'video/mp4']
 
-// CORS Proxy
-export const CORS_PROXY_URL = 'https://corsproxy.io/'
+// CORS Proxy (deprecated — URL upload removed)
+// export const CORS_PROXY_URL = 'https://corsproxy.io/'
 
 // Edge Detection Algorithms
 export const ALGORITHMS = [

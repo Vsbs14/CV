@@ -17,14 +17,11 @@ import {
   DEFAULT_SIMPLIFY,
   SIMPLIFY_STEP,
   SIMPLIFY_ERROR_MARGIN_MULTIPLIER,
-  CORS_PROXY_URL,
   ERRORS,
   MAX_IMAGE_SIZE_MB,
   ALGORITHMS,
 } from '../constants'
 import './Processor.css'
-
-
 
 export default function ImageProcessor({ opencvReady, onEdgeData, onOpenDesmos }) {
   const [imageSrc, setImageSrc] = useState(null)
@@ -37,8 +34,6 @@ export default function ImageProcessor({ opencvReady, onEdgeData, onOpenDesmos }
   const [processing, setProcessing] = useState(false)
   const [hasResult, setHasResult] = useState(false)
   const [dragOver, setDragOver] = useState(false)
-  const [urlInput, setUrlInput] = useState('')
-  const [inputMode, setInputMode] = useState('upload') // 'upload' | 'url'
   const [edgePaths, setEdgePaths] = useState(null)
   const [error, setError] = useState(null)
   const [stats, setStats] = useState(null)
@@ -58,7 +53,6 @@ export default function ImageProcessor({ opencvReady, onEdgeData, onOpenDesmos }
 
   const loadImageToCanvas = useCallback((src) => {
     const img = new Image()
-    img.crossOrigin = 'anonymous'
     img.onload = () => {
       const canvas = inputCanvasRef.current
       let w = img.naturalWidth
@@ -113,23 +107,6 @@ export default function ImageProcessor({ opencvReady, onEdgeData, onOpenDesmos }
     handleFile(file)
   }, [handleFile])
 
-  const handleUrlLoad = useCallback((overrideUrl) => {
-    const targetUrl = typeof overrideUrl === 'string' ? overrideUrl : urlInput
-    const trimmedUrl = targetUrl.trim()
-    if (!trimmedUrl) {
-      setError('Please enter a URL')
-      return
-    }
-    try {
-      new URL(trimmedUrl) // Validate URL format
-      const proxyUrl = `${CORS_PROXY_URL}?${encodeURIComponent(trimmedUrl)}`
-      setError(null)
-      loadImageToCanvas(proxyUrl)
-    } catch {
-      setError('Invalid URL format')
-    }
-  }, [urlInput, loadImageToCanvas])
-
   const runEdgeDetection = useCallback(() => {
     if (!opencvReady || !imageSrc || !window.cv) {
       setError(ERRORS.OPENCV_NOT_READY)
@@ -140,131 +117,115 @@ export default function ImageProcessor({ opencvReady, onEdgeData, onOpenDesmos }
 
     const process = () => {
       const startTime = performance.now()
-      const cv = window.cv;
-          const inputCanvas = inputCanvasRef.current;
-          const outputCanvas = outputCanvasRef.current;
+      const cv = window.cv
+      const inputCanvas = inputCanvasRef.current
+      const outputCanvas = outputCanvasRef.current
 
-          outputCanvas.width = inputCanvas.width
-          outputCanvas.height = inputCanvas.height
+      outputCanvas.width = inputCanvas.width
+      outputCanvas.height = inputCanvas.height
 
-        let src, gray, blurred, dst, rgba;
-        let sobelX, sobelY, absX, absY, lap;
-        let kernel, contours, hierarchy;
-        let skel, temp, eroded, crossElement;
-        
-        try {
-          // Read source image
-          src = cv.imread(inputCanvas)
-          gray = new cv.Mat()
-          blurred = new cv.Mat()
-          dst = new cv.Mat()
+      let src, gray, blurred, dst, rgba
+      let sobelX, sobelY, absX, absY, lap
+      let kernel, contours, hierarchy
+      let skel, temp, eroded, crossElement
 
-          // Convert to grayscale
-          cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY)
+      try {
+        src = cv.imread(inputCanvas)
+        gray = new cv.Mat()
+        blurred = new cv.Mat()
+        dst = new cv.Mat()
 
-          // Apply blur
-          const ksize = blurAmount % 2 === 0 ? blurAmount + 1 : blurAmount
-          const kSizeObj = new cv.Size(ksize, ksize)
-          cv.GaussianBlur(gray, blurred, kSizeObj, 0)
+        cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY)
 
-          if (algorithm === 'canny') {
-            cv.Canny(blurred, dst, threshold1, threshold2)
-          } else if (algorithm === 'sobel') {
-            sobelX = new cv.Mat()
-            sobelY = new cv.Mat()
-            absX = new cv.Mat()
-            absY = new cv.Mat()
-            cv.Sobel(blurred, sobelX, cv.CV_16S, 1, 0)
-            cv.Sobel(blurred, sobelY, cv.CV_16S, 0, 1)
-            cv.convertScaleAbs(sobelX, absX)
-            cv.convertScaleAbs(sobelY, absY)
-            cv.addWeighted(absX, 0.5, absY, 0.5, 0, dst)
-          } else if (algorithm === 'laplacian') {
-            lap = new cv.Mat()
-            cv.Laplacian(blurred, lap, cv.CV_16S)
-            cv.convertScaleAbs(lap, dst)
-          }
+        const ksize = blurAmount % 2 === 0 ? blurAmount + 1 : blurAmount
+        const kSizeObj = new cv.Size(ksize, ksize)
+        cv.GaussianBlur(gray, blurred, kSizeObj, 0)
 
-          // Connect broken edge lines with Morphological Closing
-          kernel = cv.Mat.ones(3, 3, cv.CV_8U)
-          cv.morphologyEx(dst, dst, cv.MORPH_CLOSE, kernel)
+        if (algorithm === 'canny') {
+          cv.Canny(blurred, dst, threshold1, threshold2)
+        } else if (algorithm === 'sobel') {
+          sobelX = new cv.Mat()
+          sobelY = new cv.Mat()
+          absX = new cv.Mat()
+          absY = new cv.Mat()
+          cv.Sobel(blurred, sobelX, cv.CV_16S, 1, 0)
+          cv.Sobel(blurred, sobelY, cv.CV_16S, 0, 1)
+          cv.convertScaleAbs(sobelX, absX)
+          cv.convertScaleAbs(sobelY, absY)
+          cv.addWeighted(absX, 0.5, absY, 0.5, 0, dst)
+        } else if (algorithm === 'laplacian') {
+          lap = new cv.Mat()
+          cv.Laplacian(blurred, lap, cv.CV_16S)
+          cv.convertScaleAbs(lap, dst)
+        }
 
-          // Convert single channel to RGBA for display
-          rgba = new cv.Mat()
-          cv.cvtColor(dst, rgba, cv.COLOR_GRAY2RGBA)
-          cv.imshow(outputCanvas, rgba)
+        kernel = cv.Mat.ones(3, 3, cv.CV_8U)
+        cv.morphologyEx(dst, dst, cv.MORPH_CLOSE, kernel)
 
-          // Threshold the edges for contour detection. 
-          // Canny is already binary, but Sobel/Laplacian need adaptive thresholding.
-          if (algorithm === 'canny') {
-            cv.threshold(dst, dst, 128, 255, cv.THRESH_BINARY)
-          } else {
-            cv.threshold(dst, dst, 0, 255, cv.THRESH_BINARY | cv.THRESH_OTSU)
-          }
-          
-          // Morphological Skeletonization to prevent "double outlines" in Desmos
-          skel = cv.Mat.zeros(dst.rows, dst.cols, cv.CV_8UC1)
-          temp = new cv.Mat()
-          eroded = new cv.Mat()
-          crossElement = cv.getStructuringElement(cv.MORPH_CROSS, new cv.Size(3, 3))
-          
-          let done = false
-          let maxIter = 100 // Prevent infinite loops
-          while (!done && maxIter > 0) {
-            cv.erode(dst, eroded, crossElement)
-            cv.dilate(eroded, temp, crossElement)
-            cv.subtract(dst, temp, temp)
-            cv.bitwise_or(skel, temp, skel)
-            eroded.copyTo(dst)
-            
-            if (cv.countNonZero(dst) === 0) {
-              done = true
-            }
-            maxIter--
-          }
-          
-          skel.copyTo(dst)
-          
-          contours = new cv.MatVector()
-          hierarchy = new cv.Mat()
-          // Trace connected lines (contours) along the edges
-          cv.findContours(dst, contours, hierarchy, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE)
+        rgba = new cv.Mat()
+        cv.cvtColor(dst, rgba, cv.COLOR_GRAY2RGBA)
+        cv.imshow(outputCanvas, rgba)
 
-          const paths = []
-          let totalCurves = 0
-          const h = outputCanvas.height
+        if (algorithm === 'canny') {
+          cv.threshold(dst, dst, 128, 255, cv.THRESH_BINARY)
+        } else {
+          cv.threshold(dst, dst, 0, 255, cv.THRESH_BINARY | cv.THRESH_OTSU)
+        }
 
-          for (let i = 0; i < contours.size(); ++i) {
-            const cnt = contours.get(i)
-            
-            try {
-              if (cnt.rows >= noiseFilter) {
-                const rawPoints = []
-                for (let j = 0; j < cnt.rows; ++j) {
-                  const ptX = cnt.data32S[j * 2]
-                  const ptY = cnt.data32S[j * 2 + 1]
-                  rawPoints.push([ptX, h - ptY]) // Flip Y for Desmos
-                }
-                
-                if (rawPoints.length > 1) {
-                  // Fit Bezier curves to the raw contour points
-                  const errorMargin = Math.max(0.5, simplify * SIMPLIFY_ERROR_MARGIN_MULTIPLIER)
-                  const beziers = fitCurve(rawPoints, errorMargin)
-                  if (beziers.length > 0) {
-                    paths.push(beziers)
-                    totalCurves += beziers.length
-                  }
+        skel = cv.Mat.zeros(dst.rows, dst.cols, cv.CV_8UC1)
+        temp = new cv.Mat()
+        eroded = new cv.Mat()
+        crossElement = cv.getStructuringElement(cv.MORPH_CROSS, new cv.Size(3, 3))
+
+        let done = false
+        let maxIter = 100
+        while (!done && maxIter > 0) {
+          cv.erode(dst, eroded, crossElement)
+          cv.dilate(eroded, temp, crossElement)
+          cv.subtract(dst, temp, temp)
+          cv.bitwise_or(skel, temp, skel)
+          eroded.copyTo(dst)
+          if (cv.countNonZero(dst) === 0) done = true
+          maxIter--
+        }
+
+        skel.copyTo(dst)
+
+        contours = new cv.MatVector()
+        hierarchy = new cv.Mat()
+        cv.findContours(dst, contours, hierarchy, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE)
+
+        const paths = []
+        let totalCurves = 0
+        const h = outputCanvas.height
+
+        for (let i = 0; i < contours.size(); ++i) {
+          const cnt = contours.get(i)
+          try {
+            if (cnt.rows >= noiseFilter) {
+              const rawPoints = []
+              for (let j = 0; j < cnt.rows; ++j) {
+                const ptX = cnt.data32S[j * 2]
+                const ptY = cnt.data32S[j * 2 + 1]
+                rawPoints.push([ptX, h - ptY])
+              }
+              if (rawPoints.length > 1) {
+                const errorMargin = Math.max(0.5, simplify * SIMPLIFY_ERROR_MARGIN_MULTIPLIER)
+                const beziers = fitCurve(rawPoints, errorMargin)
+                if (beziers.length > 0) {
+                  paths.push(beziers)
+                  totalCurves += beziers.length
                 }
               }
-            } finally {
-              cnt.delete()
             }
+          } finally {
+            cnt.delete()
           }
+        }
 
-          setStats({ time: Math.round(performance.now() - startTime), curves: totalCurves })
-          setEdgePaths(paths)
-          onEdgeData(paths)
-
+        setStats({ time: Math.round(performance.now() - startTime), curves: totalCurves })
+        setEdgePaths(paths)
+        onEdgeData(paths)
         setHasResult(true)
       } catch (err) {
         console.error('OpenCV error:', err)
@@ -291,11 +252,10 @@ export default function ImageProcessor({ opencvReady, onEdgeData, onOpenDesmos }
       }
       setProcessing(false)
     }
-    // Double rAF ensures the browser paints the "PROCESSING..." state before the thread blocks
     requestAnimationFrame(() => {
-      requestAnimationFrame(process);
-    });
-  }, [opencvReady, imageSrc, algorithm, threshold1, threshold2, blurAmount, noiseFilter, simplify, onEdgeData]);
+      requestAnimationFrame(process)
+    })
+  }, [opencvReady, imageSrc, algorithm, threshold1, threshold2, blurAmount, noiseFilter, simplify, onEdgeData])
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -359,52 +319,24 @@ export default function ImageProcessor({ opencvReady, onEdgeData, onOpenDesmos }
       <aside className="controls-panel">
         <div className="controls-section">
           <div className="panel-label">INPUT</div>
-          <div className="input-mode-toggle">
-            <button
-              className={`mode-tab ${inputMode === 'upload' ? 'active' : ''}`}
-              onClick={() => setInputMode('upload')}
-            >UPLOAD</button>
-            <button
-              className={`mode-tab ${inputMode === 'url' ? 'active' : ''}`}
-              onClick={() => setInputMode('url')}
-            >URL</button>
+          <div
+            className={`drop-zone ${dragOver ? 'drag-over' : ''}`}
+            onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={handleDrop}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <span className="drop-icon">⊕</span>
+            <span className="drop-label">DROP IMAGE<br/>OR CLICK TO BROWSE</span>
+            <span className="drop-sub">PNG, JPG, WEBP, GIF</span>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              style={{ display: 'none' }}
+              onChange={(e) => handleFile(e.target.files[0])}
+            />
           </div>
-
-          {inputMode === 'upload' ? (
-            <>
-            <div
-              className={`drop-zone ${dragOver ? 'drag-over' : ''}`}
-              style={{ height: 120 }}
-              onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
-              onDragLeave={() => setDragOver(false)}
-              onDrop={handleDrop}
-              onClick={() => fileInputRef.current?.click()}
-            >
-              <span className="drop-icon">⊕</span>
-              <span className="drop-label">DROP IMAGE<br/>OR CLICK TO BROWSE</span>
-              <span className="drop-sub">PNG, JPG, WEBP, GIF</span>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                style={{ display: 'none' }}
-                onChange={(e) => handleFile(e.target.files[0])}
-              />
-            </div>
-            </>
-          ) : (
-            <div className="url-input-group">
-              <input
-                type="text"
-                className="url-input"
-                placeholder="https://example.com/image.jpg"
-                value={urlInput}
-                onChange={(e) => setUrlInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleUrlLoad(urlInput)}
-              />
-              <button className="btn" onClick={() => handleUrlLoad(urlInput)}>LOAD</button>
-            </div>
-          )}
         </div>
 
         <div className="controls-section">
@@ -467,7 +399,7 @@ export default function ImageProcessor({ opencvReady, onEdgeData, onOpenDesmos }
           </div>
           <input type="range" min={MIN_NOISE_FILTER} max={MAX_NOISE_FILTER} step={1} value={noiseFilter}
             onChange={e => setNoiseFilter(+e.target.value)} />
-            
+
           <div className="param-row" style={{ marginTop: 16 }}>
             <span className="param-label" title="Reduces the coordinate points in detected lines. Higher values make rendering faster but less accurate.">
               SIMPLIFY CURVE <span style={{ cursor: 'help', opacity: 0.7 }}>ⓘ</span>
@@ -493,7 +425,7 @@ export default function ImageProcessor({ opencvReady, onEdgeData, onOpenDesmos }
               ⚠ {error}
             </div>
           )}
-          
+
           {stats && hasResult && (
             <div style={{
               display: 'flex',
@@ -507,7 +439,7 @@ export default function ImageProcessor({ opencvReady, onEdgeData, onOpenDesmos }
               <span>∿ {stats.curves.toLocaleString()} CURVES</span>
             </div>
           )}
-          
+
           <button
             className="btn primary"
             onClick={runEdgeDetection}

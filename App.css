@@ -163,10 +163,20 @@ html, body, #root {
   gap: 7px;
   font-size: 10px;
   letter-spacing: 0.1em;
+  padding: 4px 10px;
+  border-radius: var(--radius);
+  background: var(--bg2);
+  border: 1px solid var(--border);
 }
 
-.cv-status.ready { color: var(--accent); }
-.cv-status.loading { color: var(--text-muted); }
+.cv-status.ready { 
+  color: var(--accent); 
+  border-color: var(--accent);
+}
+
+.cv-status.loading { 
+  color: var(--text-muted); 
+}
 
 .cv-dot {
   width: 6px;
@@ -176,12 +186,12 @@ html, body, #root {
 }
 
 .cv-status.loading .cv-dot {
-  animation: pulse 1s ease-in-out infinite;
+  animation: pulse 1.5s ease-in-out infinite;
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 1; }
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.1); }
 }
 
 /* ─── MAIN ─── */
@@ -220,18 +230,42 @@ html, body, #root {
   padding: 9px 18px;
   cursor: pointer;
   border-radius: var(--radius);
-  transition: var(--transition);
+  transition: all 0.2s ease;
   white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.03) 50%, transparent 100%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
 }
 
 .btn:hover {
   border-color: var(--accent);
   color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn:hover::before {
+  opacity: 1;
+}
+
+.btn:active {
+  transform: translateY(0);
+  box-shadow: none;
 }
 
 .btn:disabled {
-  opacity: 0.3;
+  opacity: 0.35;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .btn.primary {
@@ -242,14 +276,19 @@ html, body, #root {
 }
 
 .btn.primary:hover {
-  background: var(--text);
-  border-color: var(--text);
-  color: var(--bg);
+  background: color-mix(in srgb, var(--accent) 85%, black);
+  border-color: color-mix(in srgb, var(--accent) 85%, black);
+  color: var(--primary-text);
 }
 
 .btn.danger {
   border-color: var(--accent2);
   color: var(--accent2);
+}
+
+.btn.danger:hover {
+  background: var(--accent2);
+  color: white;
 }
 
 /* ─── RANGE SLIDER ─── */
