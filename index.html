@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CV-LAB | Computer Vision Laboratory</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <!-- OpenCV.js -->
+    <script async src="https://docs.opencv.org/4.8.0/opencv.js" onload="window.openCvReady=true;window.dispatchEvent(new Event('opencv-ready'))" onerror="console.error('OpenCV.js failed to load'); window.openCvReady=false; window.opencvError=true;"></script>
+    <!-- Desmos API -->
+    <script src="https://www.desmos.com/api/v1.9/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6" onerror="console.error('Desmos API failed to load'); window.desmosError=true;"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+    <script>
+      // Monitor for CDN load failures and provide user feedback
+      window.addEventListener('load', () => {
+        const issues = []
+        if (window.opencvError) issues.push('OpenCV.js')
+        if (!window.Desmos) issues.push('Desmos API')
+        if (issues.length > 0) {
+          console.warn('Failed to load: ' + issues.join(', '))
+          window.cdnErrors = issues
+        }
+      })
+    </script>
+  </body>
+</html>
