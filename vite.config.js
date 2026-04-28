@@ -9,5 +9,5 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['opencv.js']
   },
-  base: '/Edge/'
+  base: '/CV/'
 })
