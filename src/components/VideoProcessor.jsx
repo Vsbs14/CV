@@ -520,7 +520,7 @@ export default function VideoProcessor({ opencvReady }) {
             <video
               ref={videoRef}
               src={videoSrc || undefined}
-              style={{ maxWidth: '100%', maxHeight: '100%', display: (videoSrc || isWebcam) ? 'block' : 'none' }}
+              style={{ width: '100%', maxWidth: '100%', maxHeight: '100%', display: (videoSrc || isWebcam) ? 'block' : 'none' }}
               loop
               playsInline
               muted
