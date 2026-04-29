@@ -47,9 +47,16 @@ export default function VideoProcessor({ opencvReady }) {
     localStorage.setItem('cv_vid_t1', threshold1)
     localStorage.setItem('cv_vid_t2', threshold2)
     localStorage.setItem('cv_vid_blur', blurAmount)
-  }, [algorithm, threshold1, threshold2, blurAmount])
+   }, [algorithm, threshold1, threshold2, blurAmount])
 
-  const processFrame = useCallback(() => {
+   // Auto-collapse INPUT section on mobile after video/webcam loads
+   useEffect(() => {
+     if (window.innerWidth <= 640 && (videoSrc || isWebcam)) {
+       setInputCollapsed(true)
+     }
+   }, [videoSrc, isWebcam])
+
+   const processFrame = useCallback(() => {
     if (!opencvReady || !window.cv || !videoRef.current) {
       animFrameRef.current = requestAnimationFrame(processFrame)
       return

@@ -52,9 +52,16 @@ export default function ImageProcessor({ opencvReady, onEdgeData, onOpenDesmos }
     localStorage.setItem('cv_blur', blurAmount)
     localStorage.setItem('cv_noise', noiseFilter)
     localStorage.setItem('cv_simplify', simplify)
-  }, [algorithm, threshold1, threshold2, blurAmount, noiseFilter, simplify])
+   }, [algorithm, threshold1, threshold2, blurAmount, noiseFilter, simplify])
 
-  const loadImageToCanvas = useCallback((src) => {
+   // Auto-collapse INPUT section on mobile after image loads
+   useEffect(() => {
+     if (window.innerWidth <= 640 && imageSrc) {
+       setInputCollapsed(true)
+     }
+   }, [imageSrc])
+
+   const loadImageToCanvas = useCallback((src) => {
     const img = new Image()
     img.onload = () => {
       const canvas = inputCanvasRef.current
