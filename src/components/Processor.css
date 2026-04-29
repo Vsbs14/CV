@@ -300,35 +300,48 @@
   
   .controls-panel {
     width: 100%;
-    max-height: none;
+    max-height: 40vh;
     border-right: none;
     border-bottom: 1px solid var(--border);
-    padding: 16px;
-    gap: 14px;
-    max-height: 50vh;
+    padding: 14px;
+    gap: 12px;
   }
   
   .canvas-area {
-    flex-direction: column;
-    padding: 16px;
-    overflow-y: auto;
     flex: 1;
+    min-height: 0;
+    flex-direction: column;
+    padding: 12px;
+    overflow-y: auto;
   }
   
   .canvas-pane {
-    min-height: 300px;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .canvas-wrapper {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   
   .canvas-divider {
     transform: rotate(90deg);
-    padding: 8px 0;
+    padding: 6px 0;
     margin: 4px 0;
+    font-size: 14px;
   }
 
   /* ─── SLIDER TOUCH IMPROVEMENTS FOR TABLETS ─── */
   input[type="range"] {
     height: 3px;
-    margin: 12px 0;
+    margin: 10px 0;
   }
 
   input[type="range"]::-webkit-slider-thumb {
@@ -348,10 +361,10 @@
     padding: 10px 16px;
   }
 
-   .btn.primary {
-     font-size: 13px;
-     padding: 12px 18px;
-   }
+  .btn.primary {
+    font-size: 13px;
+    padding: 12px 18px;
+  }
 }
 
 /* ─── MOBILE-FIRST ENHANCEMENTS (≤640px) ─── */
@@ -361,96 +374,98 @@
   }
   
   .controls-panel {
-    gap: 14px;
-    padding: 12px;
+    gap: 10px;
+    padding: 10px;
+    max-height: 38vh;
   }
   
   .controls-section {
-    gap: 10px;
+    gap: 8px;
   }
   
-  .controls-actions {
-    padding-top: 12px;
-    gap: 10px;
+  .controls-quick-action {
+    padding: 10px;
+    margin-bottom: 6px;
   }
   
   .panel-label {
-    font-size: 11px;
+    font-size: 10px;
     letter-spacing: 0.2em;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
   }
   
   /* ─── DROP ZONE ─── */
   .drop-zone {
-    min-height: 100px;
-    gap: 10px;
-    padding: 16px;
+    min-height: 80px;
+    gap: 8px;
+    padding: 12px;
   }
   
   .drop-icon {
-    font-size: 36px;
+    font-size: 28px;
     opacity: 0.5;
   }
   
   .drop-label {
-    font-size: 12px;
+    font-size: 11px;
     letter-spacing: 0.15em;
     text-align: center;
-    line-height: 1.5;
+    line-height: 1.4;
   }
   
   .drop-sub {
-    font-size: 11px;
+    font-size: 10px;
   }
   
   /* ─── ALGORITHM BUTTONS ─── */
   .algo-group {
-    gap: 6px;
+    gap: 4px;
   }
   
   .algo-btn {
-    font-size: 11px;
-    padding: 10px 6px;
+    font-size: 10px;
+    padding: 8px 4px;
     letter-spacing: 0.1em;
   }
   
   .info-text {
-    font-size: 11px !important;
+    font-size: 10px !important;
     line-height: 1.4;
+    margin-top: 6px !important;
   }
   
   /* ─── PARAMETERS ─── */
   .param-row {
-    margin-bottom: 4px;
+    margin-bottom: 2px;
   }
   
   .param-label {
-    font-size: 11px;
+    font-size: 10px;
     letter-spacing: 0.1em;
   }
   
   .param-value {
-    font-size: 13px;
+    font-size: 11px;
     font-weight: 700;
   }
   
   /* ─── SLIDERS: ENLARGE TOUCH TARGET ─── */
   input[type="range"] {
     height: 3px;
-    margin: 10px 0;
+    margin: 8px 0;
     -webkit-appearance: none;
     appearance: none;
   }
   
   input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
     background: var(--accent);
     border: 2px solid var(--bg);
     border-radius: 50%;
     cursor: pointer;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     transition: transform 0.15s ease;
   }
   
@@ -459,75 +474,93 @@
   }
   
   input[type="range"]::-moz-range-thumb {
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
     background: var(--accent);
     border: 2px solid var(--bg);
     border-radius: 50%;
     cursor: pointer;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
   }
   
   /* ─── BUTTONS ─── */
   .btn {
-    font-size: 12px;
-    padding: 12px 18px;
-    min-height: 48px;
-    letter-spacing: 0.1em;
+    font-size: 11px;
+    padding: 10px 14px;
+    min-height: 44px;
+    letter-spacing: 0.08em;
   }
   
   .btn.primary {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
-    padding: 14px 20px;
+    padding: 12px 16px;
   }
   
   /* ─── CANVAS PANES ─── */
   .canvas-pane {
-    min-height: 300px;
-    gap: 10px;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
   }
   
   .pane-label {
-    font-size: 11px;
+    font-size: 10px;
     letter-spacing: 0.2em;
   }
   
   .canvas-wrapper {
-    min-height: 250px;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   
   .canvas-placeholder {
-    font-size: 12px;
+    font-size: 11px;
   }
   
   .canvas-placeholder::before {
-    font-size: 32px;
+    font-size: 28px;
   }
   
   .canvas-divider {
-    font-size: 16px;
-    padding: 8px 0;
-    margin: 4px 0;
+    font-size: 14px;
+    padding: 6px 0;
+    margin: 3px 0;
+  }
+  
+  .pane-label {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+  }
+  
+  .canvas-wrapper {
+    flex: 1;
+    min-height: 220px;
+  }
+  
+  .canvas-placeholder {
+    font-size: 11px;
+  }
+  
+  .canvas-placeholder::before {
+    font-size: 28px;
+  }
+  
+  .canvas-divider {
+    font-size: 14px;
+    padding: 6px 0;
+    margin: 3px 0;
   }
   
   /* ─── CV WARNING ─── */
   .cv-warning {
-    font-size: 11px;
-    padding: 12px;
-    line-height: 1.5;
-  }
-  
-  /* ─── ERROR DISPLAY ─── */
-  .controls-actions > div[style*="rgba(224, 49, 49"] {
-    font-size: 11px !important;
-    padding: 12px !important;
-    line-height: 1.5 !important;
-  }
-  
-  /* ─── STATS ─── */
-  .controls-actions > div[style*="justify-content"] {
-    font-size: 11px !important;
-    gap: 16px !important;
+    font-size: 10px;
+    padding: 10px;
+    line-height: 1.4;
   }
 }
