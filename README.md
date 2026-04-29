@@ -13,6 +13,8 @@ All processing happens locally in your browser — no server required.
 - **Export Options**: Download results as PNG, SVG, or JSON; record processed video as `.webm` or `.mp4`
 - **Keyboard Shortcuts**: `D` to detect edges, `G` to open Desmos, `Space` to play/pause video, `Esc` to close Desmos panel
 - **Light & Dark Mode**: Switch between themes at any time
+- **Mobile-Optimized UI**: Collapsible control panels, large touch targets, responsive layout for phones and tablets
+- **Persistent Preferences**: Your theme, mode, parameters, and UI state are automatically saved
 
 ## Tech Stack
 
@@ -76,6 +78,16 @@ This project is configured for automatic deployment to GitHub Pages via GitHub A
 - Curves are rendered as parallel list arrays for efficient display
 - Uses the same coordinate system as the source image (Y flipped for Cartesian orientation)
 - Adjust **MAX CURVES** slider to balance performance vs detail
+
+### Persistence
+Your preferences are saved automatically:
+- Theme (dark/light)
+- Last selected mode (Image/Video)
+- All algorithm parameters (thresholds, blur, noise filter, simplification)
+- Accordion panel states (which sections are collapsed)
+- Desmos Max Curves setting
+
+No manual saving required — everything restores on your next visit.
 
 ## Configuration
 
