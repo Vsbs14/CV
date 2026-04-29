@@ -29,6 +29,7 @@ export default function VideoProcessor({ opencvReady }) {
   const [error, setError] = useState(null)
   // Mobile accordion state
   const [inputCollapsed, setInputCollapsed] = useState(() => window.innerWidth <= 640 && !!videoSrc)
+  const [algoCollapsed, setAlgoCollapsed] = useState(() => window.innerWidth <= 640 && false)
   const [paramsCollapsed, setParamsCollapsed] = useState(() => window.innerWidth <= 640 && !videoSrc)
 
   const videoRef = useRef(null)
@@ -413,24 +414,33 @@ export default function VideoProcessor({ opencvReady }) {
           )}
         </div>
 
-         <div className="controls-section">
-           <div className="panel-label">ALGORITHM</div>
-           <div className="algo-group">
-             {ALGORITHMS.map(a => (
-               <button
-                 key={a.id}
-                 className={`algo-btn ${algorithm === a.id ? 'active' : ''}`}
-                 onClick={() => setAlgorithm(a.id)}
-                 title={a.desc}
-               >
-                 {a.label}
-               </button>
-             ))}
-           </div>
-           <div className="info-text" style={{ fontSize: '0.8em', marginTop: '8px', opacity: 0.8 }}>
-             {ALGORITHMS.find(a => a.id === algorithm)?.desc}
-           </div>
-         </div>
+        <div className="controls-section">
+          <div className="panel-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }} onClick={() => window.innerWidth <= 640 && setAlgoCollapsed(!algoCollapsed)}>
+            <span>ALGORITHM</span>
+            {window.innerWidth <= 640 && (
+              <span style={{ fontSize: '10px', transition: 'transform 0.2s', transform: algoCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)' }}>▼</span>
+            )}
+          </div>
+          {(!algoCollapsed || window.innerWidth > 640) && (
+            <>
+          <div className="algo-group">
+            {ALGORITHMS.map(a => (
+              <button
+                key={a.id}
+                className={`algo-btn ${algorithm === a.id ? 'active' : ''}`}
+                onClick={() => setAlgorithm(a.id)}
+                title={a.desc}
+              >
+                {a.label}
+              </button>
+            ))}
+          </div>
+          <div className="info-text" style={{ fontSize: '0.8em', marginTop: '8px', opacity: 0.8 }}>
+            {ALGORITHMS.find(a => a.id === algorithm)?.desc}
+          </div>
+        </>
+          )}
+        </div>
 
          {/* ─── QUICK ACTION: PLAY/STOP ─── */}
          <div className="controls-section controls-quick-action">
