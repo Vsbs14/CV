@@ -16,8 +16,8 @@
 }
 
 .desmos-panel {
-  width: 90vw;
-  height: 88vh;
+  width: 95vw;
+  height: 95vh;
   max-width: 1400px;
   max-height: 800px;
   aspect-ratio: 16 / 9;
@@ -39,8 +39,8 @@
 .desmos-header {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 14px 20px;
+  gap: 12px;
+  padding: 16px 20px;
   border-bottom: 1px solid var(--border);
   background: var(--bg2);
   flex-shrink: 0;
@@ -52,7 +52,7 @@
   gap: 8px;
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 15px;
+  font-size: 16px;
   letter-spacing: 0.15em;
 }
 
@@ -69,13 +69,14 @@
 }
 
 .desmos-status {
-  font-size: 10px;
-  letter-spacing: 0.15em;
+  font-size: 14px;
+  letter-spacing: 0.1em;
   color: var(--accent);
+  font-weight: 600;
 }
 
 .desmos-count {
-  font-size: 10px;
+  font-size: 13px;
   letter-spacing: 0.1em;
   color: var(--text-muted);
 }
@@ -90,31 +91,60 @@
 .desmos-slider-group {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
-.param-label {
-  font-size: 10px;
+.desmos-slider-group .param-label {
+  font-size: 11px;
   letter-spacing: 0.12em;
   color: var(--text-muted);
   white-space: nowrap;
 }
 
-.param-value {
-  font-size: 12px;
+.desmos-slider-group .param-value {
+  font-size: 14px;
   color: var(--accent);
   font-weight: 700;
-  min-width: 48px;
+  min-width: 60px;
+  text-align: right;
+}
+
+.desmos-close-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--accent2);
+  border: none;
+  color: white;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  padding: 10px 16px;
+  cursor: pointer;
+  border-radius: var(--radius);
+  transition: all 0.2s ease;
+  font-weight: 700;
+}
+
+.desmos-close-btn:hover {
+  background: #e03131;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(224, 49, 49, 0.3);
+}
+
+.desmos-close-btn:active {
+  transform: translateY(0);
 }
 
 .desmos-notice {
-  padding: 8px 20px;
-  font-size: 10px;
+  padding: 10px 20px;
+  font-size: 12px;
   color: var(--text-muted);
   letter-spacing: 0.05em;
   background: rgba(232, 255, 71, 0.03);
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
+  line-height: 1.5;
 }
 
 .desmos-container {
@@ -128,4 +158,84 @@
 /* Force Desmos dark background */
 .desmos-container .dcg-calculator-api-container {
   background: #0a0a0a !important;
+}
+
+/* ─── MOBILE RESPONSIVENESS ─── */
+@media (max-width: 768px) {
+  .desmos-panel {
+    width: 100vw;
+    height: 100vh;
+    max-width: none;
+    max-height: none;
+    aspect-ratio: auto;
+    border-radius: 0;
+  }
+
+  .desmos-header {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 12px 16px;
+  }
+
+  .desmos-title {
+    order: 1;
+    flex-basis: 100%;
+    font-size: 14px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 8px;
+    margin-bottom: 4px;
+  }
+
+  .desmos-meta {
+    order: 2;
+    margin-left: 0;
+    gap: 8px;
+  }
+
+  .desmos-status {
+    font-size: 11px;
+  }
+
+  .desmos-count {
+    font-size: 10px;
+  }
+
+  .desmos-controls {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+    margin-left: 0;
+    gap: 12px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+  }
+
+  .desmos-slider-group {
+    gap: 8px;
+  }
+
+  .desmos-slider-group .param-label {
+    font-size: 10px;
+  }
+
+  .desmos-slider-group .param-value {
+    font-size: 12px;
+    min-width: 50px;
+  }
+
+  .desmos-slider-group input[type="range"] {
+    width: 120px;
+  }
+
+  .desmos-close-btn {
+    padding: 10px 20px;
+    font-size: 13px;
+  }
+
+  .desmos-notice {
+    font-size: 12px;
+    padding: 10px 12px;
+    line-height: 1.5;
+  }
 }

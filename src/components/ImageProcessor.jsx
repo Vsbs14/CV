@@ -339,26 +339,67 @@ export default function ImageProcessor({ opencvReady, onEdgeData, onOpenDesmos }
           </div>
         </div>
 
-        <div className="controls-section">
-          <div className="panel-label">ALGORITHM</div>
-          <div className="algo-group">
-            {ALGORITHMS.map(a => (
-              <button
-                key={a.id}
-                className={`algo-btn ${algorithm === a.id ? 'active' : ''}`}
-                onClick={() => setAlgorithm(a.id)}
-              >
-                {a.label}
-              </button>
-            ))}
-          </div>
-          <div className="info-text" style={{ fontSize: '0.8em', marginTop: '8px', opacity: 0.8 }}>
-            {ALGORITHMS.find(a => a.id === algorithm)?.desc}
-          </div>
-        </div>
+         <div className="controls-section">
+           <div className="panel-label">ALGORITHM</div>
+           <div className="algo-group">
+             {ALGORITHMS.map(a => (
+               <button
+                 key={a.id}
+                 className={`algo-btn ${algorithm === a.id ? 'active' : ''}`}
+                 onClick={() => setAlgorithm(a.id)}
+               >
+                 {a.label}
+               </button>
+             ))}
+           </div>
+           <div className="info-text" style={{ fontSize: '0.8em', marginTop: '8px', opacity: 0.8 }}>
+             {ALGORITHMS.find(a => a.id === algorithm)?.desc}
+           </div>
+         </div>
 
-        <div className="controls-section">
-          <div className="panel-label">PARAMETERS</div>
+         {/* ─── QUICK ACTION: DETECT BUTTON PROMINENT ─── */}
+         <div className="controls-section controls-quick-action">
+           <button
+             className="btn primary"
+             onClick={runEdgeDetection}
+             disabled={!opencvReady || !imageSrc || processing}
+             style={{ width: '100%', fontSize: '13px', padding: '14px' }}
+           >
+             {processing ? '◌ PROCESSING...' : '◈ DETECT EDGES'}
+           </button>
+           
+           {error && (
+             <div style={{
+               padding: '12px',
+               background: 'rgba(224, 49, 49, 0.1)',
+               border: '1px solid var(--accent2)',
+               borderRadius: 'var(--radius)',
+               fontSize: '13px',
+               color: 'var(--accent2)',
+               marginTop: '10px',
+               lineHeight: '1.4'
+             }}>
+               ⚠ {error}
+             </div>
+           )}
+           
+           {stats && hasResult && (
+             <div style={{
+               display: 'flex',
+               justifyContent: 'space-between',
+               fontSize: '12px',
+               marginTop: '10px',
+               opacity: 0.9,
+               letterSpacing: '0.5px'
+             }}>
+               <span>⏱ {stats.time}ms</span>
+               <span>∿ {stats.curves.toLocaleString()} CURVES</span>
+             </div>
+           )}
+         </div>
+
+         <div className="controls-section">
+           <div className="panel-label">PARAMETERS</div>
 
           {algorithm === 'canny' && (
             <>
@@ -408,71 +449,35 @@ export default function ImageProcessor({ opencvReady, onEdgeData, onOpenDesmos }
           </div>
           <input type="range" min={MIN_SIMPLIFY} max={MAX_SIMPLIFY} step={SIMPLIFY_STEP} value={simplify}
             onChange={e => setSimplify(+e.target.value)} />
-        </div>
+         </div>
 
-        <div className="controls-section controls-actions">
-          {error && (
-            <div style={{
-              padding: '10px',
-              background: 'rgba(224, 49, 49, 0.1)',
-              border: '1px solid var(--accent2)',
-              borderRadius: 'var(--radius)',
-              fontSize: '11px',
-              color: 'var(--accent2)',
-              marginBottom: '10px',
-              lineHeight: '1.4'
-            }}>
-              ⚠ {error}
-            </div>
-          )}
+         <div className="controls-section controls-exports">
+           {hasResult && (
+             <>
+               <div className="panel-label" style={{ marginTop: '12px' }}>EXPORT</div>
+               <div style={{ display: 'flex', gap: '6px', width: '100%' }}>
+                 <button className="btn" style={{ flex: 1 }} onClick={downloadResult}>
+                   ↓ PNG
+                 </button>
+                 <button className="btn" style={{ flex: 1 }} onClick={exportSVG}>
+                   ↓ SVG
+                 </button>
+                 <button className="btn" style={{ flex: 1 }} onClick={exportJSON}>
+                   ↓ JSON
+                 </button>
+               </div>
+               <button className="btn" style={{ marginTop: '8px', width: '100%' }} onClick={onOpenDesmos}>
+                 ∿ GRAPH IN DESMOS
+               </button>
+             </>
+           )}
+         </div>
 
-          {stats && hasResult && (
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              fontSize: '11px',
-              marginBottom: '10px',
-              opacity: 0.8,
-              letterSpacing: '0.5px'
-            }}>
-              <span>⏱ {stats.time}ms</span>
-              <span>∿ {stats.curves.toLocaleString()} CURVES</span>
-            </div>
-          )}
-
-          <button
-            className="btn primary"
-            onClick={runEdgeDetection}
-            disabled={!opencvReady || !imageSrc || processing}
-          >
-            {processing ? '◌ PROCESSING...' : '◈ DETECT EDGES'}
-          </button>
-
-          {hasResult && (
-            <>
-              <div style={{ display: 'flex', gap: '8px', width: '100%', marginBottom: '8px' }}>
-                <button className="btn" style={{ flex: 1 }} onClick={downloadResult}>
-                  ↓ PNG
-                </button>
-                <button className="btn" style={{ flex: 1 }} onClick={exportSVG}>
-                  ↓ SVG
-                </button>
-                <button className="btn" style={{ flex: 1 }} onClick={exportJSON}>
-                  ↓ JSON
-                </button>
-              </div>
-              <button className="btn" onClick={onOpenDesmos}>
-                ∿ GRAPH IN DESMOS
-              </button>
-            </>
-          )}
-        </div>
-
-        {!opencvReady && (
-          <div className="cv-warning">
-            ⚡ OpenCV loading... edge detection will be available shortly.
-          </div>
-        )}
+         {!opencvReady && (
+           <div className="cv-warning">
+             ⚡ OpenCV loading... edge detection will be available shortly.
+           </div>
+         )}
       </aside>
 
       {/* Right: Canvas area */}

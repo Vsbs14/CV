@@ -157,7 +157,9 @@ export default function DesmosPanel({ edgeData, theme, onClose }) {
               />
               <span className="param-value">{maxCurves.toLocaleString()}</span>
             </div>
-            <button className="btn danger" onClick={onClose}>✕ CLOSE</button>
+             <button className="desmos-close-btn" onClick={onClose}>
+               ✕ CLOSE
+             </button>
           </div>
         </div>
 

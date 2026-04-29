@@ -61,13 +61,14 @@ html, body, #root {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
-  height: 56px;
+  padding: 0 20px;
+  height: 64px;
   border-bottom: 1px solid var(--border);
   background: var(--bg);
   flex-shrink: 0;
   position: relative;
   z-index: 10;
+  gap: 12px;
 }
 
 .header::after {
@@ -84,20 +85,21 @@ html, body, #root {
 .header-left {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .logo-mark {
   color: var(--accent);
-  font-size: 20px;
+  font-size: 18px;
   line-height: 1;
 }
 
 .logo {
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 22px;
-  letter-spacing: 0.25em;
+  font-size: 18px;
+  letter-spacing: 0.2em;
   color: var(--text);
 }
 
@@ -108,6 +110,7 @@ html, body, #root {
   padding: 3px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
+  flex-shrink: 0;
 }
 
 .nav-btn {
@@ -115,12 +118,14 @@ html, body, #root {
   border: none;
   color: var(--text-muted);
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 10px;
   letter-spacing: 0.15em;
-  padding: 6px 18px;
+  padding: 6px 14px;
   cursor: pointer;
   border-radius: 1px;
   transition: var(--transition);
+  min-width: 70px;
+  text-align: center;
 }
 
 .nav-btn:hover {
@@ -137,21 +142,24 @@ html, body, #root {
 .header-right {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 10px;
+  flex-shrink: 0;
 }
 
 .theme-btn {
   background: var(--bg2);
   border: 1px solid var(--border);
   color: var(--text);
-  font-size: 14px;
-  padding: 4px 8px;
+  font-size: 13px;
+  padding: 5px 8px;
   cursor: pointer;
   border-radius: var(--radius);
   transition: var(--transition);
   display: flex;
   align-items: center;
   justify-content: center;
+  min-width: 36px;
+  min-height: 32px;
 }
 .theme-btn:hover {
   border-color: var(--border-bright);
@@ -160,13 +168,14 @@ html, body, #root {
 .cv-status {
   display: flex;
   align-items: center;
-  gap: 7px;
-  font-size: 10px;
+  gap: 6px;
+  font-size: 9px;
   letter-spacing: 0.1em;
-  padding: 4px 10px;
+  padding: 4px 8px;
   border-radius: var(--radius);
   background: var(--bg2);
   border: 1px solid var(--border);
+  white-space: nowrap;
 }
 
 .cv-status.ready { 
@@ -368,4 +377,76 @@ canvas {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
+}
+
+/* ─── MOBILE HEADER (≤640px) ─── */
+@media (max-width: 640px) {
+  .header {
+    height: auto;
+    padding: 12px 16px;
+    flex-wrap: wrap;
+    gap: 8px;
+    min-height: 110px;
+  }
+
+  .header-left {
+    order: 1;
+    flex-basis: 100%;
+    justify-content: center;
+    gap: 4px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    width: 100%;
+  }
+
+  .logo-mark {
+    font-size: 16px;
+  }
+
+  .logo {
+    font-size: 16px;
+    letter-spacing: 0.15em;
+  }
+
+  .nav {
+    order: 2;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .nav-btn {
+    flex: 1;
+    padding: 6px 8px;
+    font-size: 9px;
+    min-width: 0;
+  }
+
+  .header-right {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+    gap: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+  }
+
+  .theme-btn {
+    min-width: 40px;
+    min-height: 36px;
+    padding: 4px;
+  }
+
+  .cv-status {
+    font-size: 8px;
+    padding: 3px 6px;
+  }
+
+  .cv-status span:not(.cv-dot) {
+    display: none;
+  }
+
+  .cv-status.loading span:not(.cv-dot),
+  .cv-status.ready span:not(.cv-dot) {
+    display: inline;
+  }
 }

@@ -30,6 +30,23 @@
   gap: 8px;
 }
 
+.controls-quick-action {
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 5;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 8px;
+}
+
+.controls-exports {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
 /* ─── INPUT MODE TOGGLE ─── */
 .input-mode-toggle {
   display: flex;
@@ -250,10 +267,13 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
   cursor: pointer;
   transition: var(--transition);
   background: var(--bg3);
+  padding: 18px;
+  min-height: 100px;
+  text-align: center;
 }
 
 .drop-zone:hover,
@@ -280,24 +300,234 @@
   
   .controls-panel {
     width: 100%;
-    max-height: 45vh;
+    max-height: none;
     border-right: none;
     border-bottom: 1px solid var(--border);
     padding: 16px;
+    gap: 14px;
+    max-height: 50vh;
   }
   
   .canvas-area {
     flex-direction: column;
     padding: 16px;
     overflow-y: auto;
+    flex: 1;
   }
   
   .canvas-pane {
-    min-height: 250px;
+    min-height: 300px;
   }
   
   .canvas-divider {
     transform: rotate(90deg);
     padding: 8px 0;
+    margin: 4px 0;
+  }
+
+  /* ─── SLIDER TOUCH IMPROVEMENTS FOR TABLETS ─── */
+  input[type="range"] {
+    height: 3px;
+    margin: 12px 0;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    width: 20px;
+    height: 20px;
+  }
+
+  input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* ─── BUTTONS ENLARGEMENT ─── */
+  .btn {
+    min-height: 44px;
+    font-size: 12px;
+    padding: 10px 16px;
+  }
+
+   .btn.primary {
+     font-size: 13px;
+     padding: 12px 18px;
+   }
+}
+
+/* ─── MOBILE-FIRST ENHANCEMENTS (≤640px) ─── */
+@media (max-width: 640px) {
+  .processor {
+    overflow-y: auto;
+  }
+  
+  .controls-panel {
+    gap: 14px;
+    padding: 12px;
+  }
+  
+  .controls-section {
+    gap: 10px;
+  }
+  
+  .controls-actions {
+    padding-top: 12px;
+    gap: 10px;
+  }
+  
+  .panel-label {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    margin-bottom: 8px;
+  }
+  
+  /* ─── DROP ZONE ─── */
+  .drop-zone {
+    min-height: 100px;
+    gap: 10px;
+    padding: 16px;
+  }
+  
+  .drop-icon {
+    font-size: 36px;
+    opacity: 0.5;
+  }
+  
+  .drop-label {
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    text-align: center;
+    line-height: 1.5;
+  }
+  
+  .drop-sub {
+    font-size: 11px;
+  }
+  
+  /* ─── ALGORITHM BUTTONS ─── */
+  .algo-group {
+    gap: 6px;
+  }
+  
+  .algo-btn {
+    font-size: 11px;
+    padding: 10px 6px;
+    letter-spacing: 0.1em;
+  }
+  
+  .info-text {
+    font-size: 11px !important;
+    line-height: 1.4;
+  }
+  
+  /* ─── PARAMETERS ─── */
+  .param-row {
+    margin-bottom: 4px;
+  }
+  
+  .param-label {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+  }
+  
+  .param-value {
+    font-size: 13px;
+    font-weight: 700;
+  }
+  
+  /* ─── SLIDERS: ENLARGE TOUCH TARGET ─── */
+  input[type="range"] {
+    height: 3px;
+    margin: 10px 0;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 24px;
+    height: 24px;
+    background: var(--accent);
+    border: 2px solid var(--bg);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    transition: transform 0.15s ease;
+  }
+  
+  input[type="range"]::-webkit-slider-thumb:active {
+    transform: scale(1.1);
+  }
+  
+  input[type="range"]::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    background: var(--accent);
+    border: 2px solid var(--bg);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  }
+  
+  /* ─── BUTTONS ─── */
+  .btn {
+    font-size: 12px;
+    padding: 12px 18px;
+    min-height: 48px;
+    letter-spacing: 0.1em;
+  }
+  
+  .btn.primary {
+    font-size: 13px;
+    font-weight: 700;
+    padding: 14px 20px;
+  }
+  
+  /* ─── CANVAS PANES ─── */
+  .canvas-pane {
+    min-height: 300px;
+    gap: 10px;
+  }
+  
+  .pane-label {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+  }
+  
+  .canvas-wrapper {
+    min-height: 250px;
+  }
+  
+  .canvas-placeholder {
+    font-size: 12px;
+  }
+  
+  .canvas-placeholder::before {
+    font-size: 32px;
+  }
+  
+  .canvas-divider {
+    font-size: 16px;
+    padding: 8px 0;
+    margin: 4px 0;
+  }
+  
+  /* ─── CV WARNING ─── */
+  .cv-warning {
+    font-size: 11px;
+    padding: 12px;
+    line-height: 1.5;
+  }
+  
+  /* ─── ERROR DISPLAY ─── */
+  .controls-actions > div[style*="rgba(224, 49, 49"] {
+    font-size: 11px !important;
+    padding: 12px !important;
+    line-height: 1.5 !important;
+  }
+  
+  /* ─── STATS ─── */
+  .controls-actions > div[style*="justify-content"] {
+    font-size: 11px !important;
+    gap: 16px !important;
   }
 }

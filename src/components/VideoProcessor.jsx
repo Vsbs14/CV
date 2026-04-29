@@ -362,60 +362,83 @@ export default function VideoProcessor({ opencvReady }) {
   return (
     <div className="processor">
       <aside className="controls-panel">
-        <div className="controls-section">
-          <div className="panel-label">VIDEO INPUT</div>
-          <button
-            className="btn"
-            style={{ width: '100%', marginBottom: '10px', justifyContent: 'center' }}
-            onClick={startWebcam}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>
-            </svg>
-            USE WEBCAM
-          </button>
+         <div className="controls-section">
+           <div className="panel-label">VIDEO INPUT</div>
+           <button
+             className="btn"
+             style={{ width: '100%', marginBottom: '10px', justifyContent: 'center' }}
+             onClick={startWebcam}
+           >
+             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+               <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>
+             </svg>
+             USE WEBCAM
+           </button>
           <div
             className={`drop-zone ${dragOver ? 'drag-over' : ''}`}
-            style={{ height: 120 }}
             onDragOver={e => { e.preventDefault(); setDragOver(true) }}
             onDragLeave={() => setDragOver(false)}
             onDrop={handleDrop}
             onClick={() => fileInputRef.current?.click()}
           >
-            <span className="drop-icon">⊕</span>
-            <span className="drop-label">DROP VIDEO<br/>OR CLICK TO BROWSE</span>
-            <span className="drop-sub">MP4, WEBM, MOV, AVI</span>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="video/*"
-              style={{ display: 'none' }}
-              onChange={e => handleFile(e.target.files[0])}
-            />
-          </div>
-        </div>
+             <span className="drop-icon">⊕</span>
+             <span className="drop-label">DROP VIDEO<br/>OR CLICK TO BROWSE</span>
+             <span className="drop-sub">MP4, WEBM, MOV, AVI</span>
+             <input
+               ref={fileInputRef}
+               type="file"
+               accept="video/*"
+               style={{ display: 'none' }}
+               onChange={e => handleFile(e.target.files[0])}
+             />
+           </div>
+         </div>
 
-        <div className="controls-section">
-          <div className="panel-label">ALGORITHM</div>
-          <div className="algo-group">
-            {ALGORITHMS.map(a => (
-              <button
-                key={a.id}
-                className={`algo-btn ${algorithm === a.id ? 'active' : ''}`}
-                onClick={() => setAlgorithm(a.id)}
-                title={a.desc}
-              >
-                {a.label}
-              </button>
-            ))}
-          </div>
-          <div className="info-text" style={{ fontSize: '0.8em', marginTop: '8px', opacity: 0.8 }}>
-            {ALGORITHMS.find(a => a.id === algorithm)?.desc}
-          </div>
-        </div>
+         <div className="controls-section">
+           <div className="panel-label">ALGORITHM</div>
+           <div className="algo-group">
+             {ALGORITHMS.map(a => (
+               <button
+                 key={a.id}
+                 className={`algo-btn ${algorithm === a.id ? 'active' : ''}`}
+                 onClick={() => setAlgorithm(a.id)}
+                 title={a.desc}
+               >
+                 {a.label}
+               </button>
+             ))}
+           </div>
+           <div className="info-text" style={{ fontSize: '0.8em', marginTop: '8px', opacity: 0.8 }}>
+             {ALGORITHMS.find(a => a.id === algorithm)?.desc}
+           </div>
+         </div>
 
-        <div className="controls-section">
-          <div className="panel-label">PARAMETERS</div>
+         {/* ─── QUICK ACTION: PLAY/STOP ─── */}
+         <div className="controls-section controls-quick-action">
+           {(videoSrc || isWebcam) && (
+             <button className="btn primary" onClick={togglePlay} disabled={!opencvReady} style={{ width: '100%', fontSize: '13px', padding: '14px' }}>
+               {isPlaying ? '◼ STOP' : '▶ PLAY + DETECT'}
+             </button>
+           )}
+           
+           {error && (
+             <div style={{
+               padding: '12px',
+               background: 'rgba(224, 49, 49, 0.1)',
+               border: '1px solid var(--accent2)',
+               borderRadius: 'var(--radius)',
+               fontSize: '13px',
+               color: 'var(--accent2)',
+               marginTop: '10px',
+               lineHeight: '1.4'
+             }}>
+               ⚠ {error}
+             </div>
+           )}
+         </div>
+
+         <div className="controls-section">
+           <div className="panel-label">PARAMETERS</div>
           {algorithm === 'canny' && (
             <>
               <div className="param-row">
@@ -444,42 +467,26 @@ export default function VideoProcessor({ opencvReady }) {
           </div>
           <input type="range" min={MIN_BLUR_KERNEL} max={MAX_BLUR_KERNEL} step={BLUR_KERNEL_STEP} value={blurAmount}
             onChange={e => setBlurAmount(+e.target.value)} />
-        </div>
+         </div>
 
-        <div className="controls-section controls-actions">
-          {error && (
-            <div style={{
-              padding: '10px',
-              background: 'rgba(224, 49, 49, 0.1)',
-              border: '1px solid var(--accent2)',
-              borderRadius: 'var(--radius)',
-              fontSize: '11px',
-              color: 'var(--accent2)',
-              marginBottom: '10px',
-              lineHeight: '1.4'
-            }}>
-              ⚠ {error}
-            </div>
-          )}
-          {(videoSrc || isWebcam) && (
-            <button className="btn primary" onClick={togglePlay} disabled={!opencvReady}>
-              {isPlaying ? '◼ STOP' : '▶ PLAY + DETECT'}
-            </button>
-          )}
-          {processing && (
-            <button 
-              className={`btn ${isRecording ? 'danger' : ''}`} 
-              onClick={toggleRecording} 
-              style={{ marginTop: '10px', width: '100%' }}
-              title="Record the output to a video file"
-            >
-              {isRecording ? '◼ STOP RECORDING' : '⏺ RECORD VIDEO'}
-            </button>
-          )}
-          {!opencvReady && (
-            <div className="cv-warning">⚡ OpenCV loading...</div>
-          )}
-        </div>
+         <div className="controls-section controls-exports">
+           {processing && (
+             <button 
+               className={`btn ${isRecording ? 'danger' : ''}`} 
+               onClick={toggleRecording} 
+               style={{ width: '100%' }}
+               title="Record the output to a video file"
+             >
+               {isRecording ? '◼ STOP RECORDING' : '⏺ RECORD VIDEO'}
+             </button>
+           )}
+         </div>
+
+         {!opencvReady && (
+           <div className="cv-warning">
+             ⚡ OpenCV loading...
+           </div>
+         )}
       </aside>
 
       <div className="canvas-area">
