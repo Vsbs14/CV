@@ -7,8 +7,8 @@ import './App.css'
 
 function App() {
   const [opencvReady, setOpencvReady] = useState(false)
-  const [mode, setMode] = useState('image') // 'image' | 'video'
-  const [theme, setTheme] = useState('dark') // 'dark' | 'light'
+  const [mode, setMode] = useState(() => localStorage.getItem('cv_mode') || 'image') // 'image' | 'video'
+  const [theme, setTheme] = useState(() => localStorage.getItem('cv_theme') || 'dark') // 'dark' | 'light'
   const [edgeData, setEdgeData] = useState(null) // pixel data for Desmos
   const [desmosOpen, setDesmosOpen] = useState(false)
 
@@ -24,7 +24,12 @@ function App() {
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
+    localStorage.setItem('cv_theme', theme)
   }, [theme])
+
+  useEffect(() => {
+    localStorage.setItem('cv_mode', mode)
+  }, [mode])
 
   return (
     <ErrorBoundary>

@@ -37,32 +37,38 @@ export default function ImageProcessor({ opencvReady, onEdgeData, onOpenDesmos }
   const [edgePaths, setEdgePaths] = useState(null)
   const [error, setError] = useState(null)
   const [stats, setStats] = useState(null)
-  // Mobile accordion state
-  const [inputCollapsed, setInputCollapsed] = useState(() => window.innerWidth <= 640 && !!imageSrc)
-  const [algoCollapsed, setAlgoCollapsed] = useState(() => window.innerWidth <= 640 && false)
-  const [paramsCollapsed, setParamsCollapsed] = useState(() => window.innerWidth <= 640 && !imageSrc)
+  // Mobile accordion state (remembered per mode)
+  const [inputCollapsed, setInputCollapsed] = useState(() => {
+    const saved = localStorage.getItem('cv_img_input_collapsed')
+    return saved !== null ? JSON.parse(saved) : window.innerWidth <= 640 && !!imageSrc
+  })
+  const [algoCollapsed, setAlgoCollapsed] = useState(() => {
+    const saved = localStorage.getItem('cv_img_algo_collapsed')
+    return saved !== null ? JSON.parse(saved) : window.innerWidth <= 640 && false
+  })
+  const [paramsCollapsed, setParamsCollapsed] = useState(() => {
+    const saved = localStorage.getItem('cv_img_params_collapsed')
+    return saved !== null ? JSON.parse(saved) : window.innerWidth <= 640 && !imageSrc
+  })
 
   const inputCanvasRef = useRef(null)
   const outputCanvasRef = useRef(null)
   const fileInputRef = useRef(null)
 
+  // Persist accordion state
   useEffect(() => {
-    localStorage.setItem('cv_algo', algorithm)
-    localStorage.setItem('cv_t1', threshold1)
-    localStorage.setItem('cv_t2', threshold2)
-    localStorage.setItem('cv_blur', blurAmount)
-    localStorage.setItem('cv_noise', noiseFilter)
-    localStorage.setItem('cv_simplify', simplify)
-   }, [algorithm, threshold1, threshold2, blurAmount, noiseFilter, simplify])
+    localStorage.setItem('cv_img_input_collapsed', JSON.stringify(inputCollapsed))
+  }, [inputCollapsed])
 
-   // Auto-collapse INPUT section on mobile after image loads
-   useEffect(() => {
-     if (window.innerWidth <= 640 && imageSrc) {
-       setInputCollapsed(true)
-     }
-   }, [imageSrc])
+  useEffect(() => {
+    localStorage.setItem('cv_img_algo_collapsed', JSON.stringify(algoCollapsed))
+  }, [algoCollapsed])
 
-   const loadImageToCanvas = useCallback((src) => {
+  useEffect(() => {
+    localStorage.setItem('cv_img_params_collapsed', JSON.stringify(paramsCollapsed))
+  }, [paramsCollapsed])
+
+  const loadImageToCanvas = useCallback((src) => {
     const img = new Image()
     img.onload = () => {
       const canvas = inputCanvasRef.current

@@ -27,10 +27,19 @@ export default function VideoProcessor({ opencvReady }) {
   const [isWebcam, setIsWebcam] = useState(false)
   const [isRecording, setIsRecording] = useState(false)
   const [error, setError] = useState(null)
-  // Mobile accordion state
-  const [inputCollapsed, setInputCollapsed] = useState(() => window.innerWidth <= 640 && !!videoSrc)
-  const [algoCollapsed, setAlgoCollapsed] = useState(() => window.innerWidth <= 640 && false)
-  const [paramsCollapsed, setParamsCollapsed] = useState(() => window.innerWidth <= 640 && !videoSrc)
+  // Mobile accordion state (remembered)
+  const [inputCollapsed, setInputCollapsed] = useState(() => {
+    const saved = localStorage.getItem('cv_vid_input_collapsed')
+    return saved !== null ? JSON.parse(saved) : window.innerWidth <= 640 && !!videoSrc
+  })
+  const [algoCollapsed, setAlgoCollapsed] = useState(() => {
+    const saved = localStorage.getItem('cv_vid_algo_collapsed')
+    return saved !== null ? JSON.parse(saved) : window.innerWidth <= 640 && false
+  })
+  const [paramsCollapsed, setParamsCollapsed] = useState(() => {
+    const saved = localStorage.getItem('cv_vid_params_collapsed')
+    return saved !== null ? JSON.parse(saved) : window.innerWidth <= 640 && !videoSrc
+  })
 
   const videoRef = useRef(null)
   const outputCanvasRef = useRef(null)
@@ -43,21 +52,40 @@ export default function VideoProcessor({ opencvReady }) {
   const mediaRecorderRef = useRef(null)
   const recordedChunksRef = useRef([])
 
+  // Persist accordion state
+  useEffect(() => {
+    localStorage.setItem('cv_vid_input_collapsed', JSON.stringify(inputCollapsed))
+  }, [inputCollapsed])
+
+  useEffect(() => {
+    localStorage.setItem('cv_vid_algo_collapsed', JSON.stringify(algoCollapsed))
+  }, [algoCollapsed])
+
+  useEffect(() => {
+    localStorage.setItem('cv_vid_params_collapsed', JSON.stringify(paramsCollapsed))
+  }, [paramsCollapsed])
+
   useEffect(() => {
     localStorage.setItem('cv_vid_algo', algorithm)
     localStorage.setItem('cv_vid_t1', threshold1)
     localStorage.setItem('cv_vid_t2', threshold2)
     localStorage.setItem('cv_vid_blur', blurAmount)
-   }, [algorithm, threshold1, threshold2, blurAmount])
+  }, [algorithm, threshold1, threshold2, blurAmount])
 
-   // Auto-collapse INPUT section on mobile after video/webcam loads
-   useEffect(() => {
-     if (window.innerWidth <= 640 && (videoSrc || isWebcam)) {
-       setInputCollapsed(true)
-     }
-   }, [videoSrc, isWebcam])
+  // Persist accordion state
+  useEffect(() => {
+    localStorage.setItem('cv_vid_input_collapsed', JSON.stringify(inputCollapsed))
+  }, [inputCollapsed])
 
-   const processFrame = useCallback(() => {
+  useEffect(() => {
+    localStorage.setItem('cv_vid_algo_collapsed', JSON.stringify(algoCollapsed))
+  }, [algoCollapsed])
+
+  useEffect(() => {
+    localStorage.setItem('cv_vid_params_collapsed', JSON.stringify(paramsCollapsed))
+  }, [paramsCollapsed])
+
+  const processFrame = useCallback(() => {
     if (!opencvReady || !window.cv || !videoRef.current) {
       animFrameRef.current = requestAnimationFrame(processFrame)
       return
