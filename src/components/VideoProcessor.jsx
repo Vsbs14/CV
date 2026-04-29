@@ -252,48 +252,41 @@ export default function VideoProcessor({ opencvReady }) {
     // Try to combine with audio from source video if available and not muted
     if (video && !muteAudio && !isWebcam) {
       try {
-        // Method 1: Try captureStream() on video element (Chrome/Firefox)
-        const audioVideo = document.createElement('video')
-        audioVideo.src = video.src
-        audioVideo.muted = false
-        audioVideo.playsInline = true
-        audioVideo.crossOrigin = 'anonymous'
-        
-        audioVideo.onloadedmetadata = () => {
-          try {
-            const audioStream = audioVideo.captureStream ? audioVideo.captureStream() : 
-                                audioVideo.mozCaptureStream ? audioVideo.mozCaptureStream() : null
-            if (audioStream) {
-              const audioTracks = audioStream.getAudioTracks()
-              if (audioTracks.length > 0) {
-                audioTracks.forEach(track => canvasStream.addTrack(track))
-                console.log('Audio track added to recording')
-                startRecordingInternal(canvasStream)
-              } else {
-                // No audio tracks from captureStream, try MediaElementSourceApi
-                tryCaptureAudioMediaElementSource(video, canvasStream)
-              }
-            } else {
-              tryCaptureAudioMediaElementSource(video, canvasStream)
-            }
-          } catch (e) {
-            console.warn('Could not capture audio, trying fallback:', e)
+        // Method 1: Try captureStream() on the actual video element (gives live audio)
+        const audioStream = video.captureStream ? video.captureStream() : 
+                            video.mozCaptureStream ? video.mozCaptureStream() : null
+        if (audioStream) {
+          const audioTracks = audioStream.getAudioTracks()
+          if (audioTracks.length > 0) {
+            audioTracks.forEach(track => canvasStream.addTrack(track))
+            console.log('Audio track added to recording (direct capture)')
+            startRecordingInternal(canvasStream)
+          } else {
+            // No audio tracks from captureStream, try MediaElementSourceApi
             tryCaptureAudioMediaElementSource(video, canvasStream)
           }
-        }
-        
-        audioVideo.onerror = () => {
-          console.warn('Audio video error, trying fallback')
+        } else {
           tryCaptureAudioMediaElementSource(video, canvasStream)
         }
-        
-        audioVideo.play().catch(e => {
-          console.warn('Could not play audio video, trying fallback:', e)
-          tryCaptureAudioMediaElementSource(video, canvasStream)
-        })
       } catch (e) {
-        console.warn('Could not set up audio capture, trying fallback:', e)
+        console.warn('Could not capture audio, trying fallback:', e)
         tryCaptureAudioMediaElementSource(video, canvasStream)
+      }
+    } else if (video && !muteAudio && isWebcam) {
+      // For webcam, try to get audio tracks from the webcam stream
+      try {
+        if (video.srcObject) {
+          const webcamStream = video.srcObject
+          const audioTracks = webcamStream.getAudioTracks()
+          if (audioTracks.length > 0) {
+            audioTracks.forEach(track => canvasStream.addTrack(track.clone()))
+            console.log('Webcam audio track added to recording')
+          }
+        }
+        startRecordingInternal(canvasStream)
+      } catch (e) {
+        console.warn('Could not capture webcam audio:', e)
+        startRecordingInternal(canvasStream)
       }
     } else {
       startRecordingInternal(canvasStream)
@@ -310,8 +303,9 @@ export default function VideoProcessor({ opencvReady }) {
         const audioCtx = new AudioContext()
         const source = audioCtx.createMediaElementSource(sourceVideo)
         const dest = audioCtx.createMediaStreamDestination()
+        // FIX: Only connect to recording stream, NOT audioCtx.destination
+        // This prevents the audio from playing out loud (avoiding mixup with video audio)
         source.connect(dest)
-        source.connect(audioCtx.destination)
         
         const audioTracks = dest.stream.getAudioTracks()
         if (audioTracks.length > 0) {
@@ -421,7 +415,7 @@ export default function VideoProcessor({ opencvReady }) {
 
   const startWebcam = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
       const video = videoRef.current
       if (!video) return
       stopWebcamTracks()
@@ -547,9 +541,9 @@ export default function VideoProcessor({ opencvReady }) {
          {/* ─── QUICK ACTION: PLAY/STOP ─── */}
          <div className="controls-section controls-quick-action">
            {(videoSrc || isWebcam) && (
-             <button className="btn primary" onClick={togglePlay} disabled={!opencvReady} style={{ width: '100%', fontSize: '13px', padding: '14px' }}>
-               {isPlaying ? '◼ STOP' : '▶ PLAY + DETECT'}
-             </button>
+              <button className="btn primary" onClick={togglePlay} disabled={!opencvReady} style={{ width: '100%', fontSize: '13px', padding: '14px' }}>
+                {isPlaying ? 'STOP' : 'PLAY + DETECT'}
+              </button>
            )}
            
            {error && (
@@ -563,7 +557,7 @@ export default function VideoProcessor({ opencvReady }) {
                marginTop: '10px',
                lineHeight: '1.4'
              }}>
-               ⚠ {error}
+                WARNING: {error}
              </div>
            )}
          </div>
@@ -610,33 +604,33 @@ export default function VideoProcessor({ opencvReady }) {
       </div>
 
         <div className="controls-section controls-exports">
-            {processing && (
-              <button 
-                className={`btn ${isRecording ? 'danger' : ''}`} 
-                onClick={toggleRecording} 
-                style={{ width: '100%' }}
-                title="Record the output to a video file"
-              >
-                {isRecording ? '◼ STOP RECORDING' : '⏺ RECORD VIDEO'}
-              </button>
-            )}
-            {processing && (
-              <button
-                className={`btn ${muteAudio ? 'danger' : ''}`}
-                onClick={() => setMuteAudio(!muteAudio)}
-                style={{ width: '100%', marginTop: '8px' }}
-                title={muteAudio ? 'Audio will NOT be included in the recording' : 'Audio from the original video will be included (if available)'}
-              >
-                {muteAudio ? '🔇 AUDIO MUTED' : '🔊 AUDIO ON'}
-              </button>
-            )}
+              {processing && (
+                <button 
+                  className={`btn ${isRecording ? 'danger' : ''}`} 
+                  onClick={toggleRecording} 
+                  style={{ width: '100%' }}
+                  title="Record the output to a video file"
+                >
+                  {isRecording ? 'STOP RECORDING' : 'RECORD VIDEO'}
+                </button>
+              )}
+              {processing && (
+                <button
+                  className={`btn ${muteAudio ? 'danger' : ''}`}
+                  onClick={() => setMuteAudio(!muteAudio)}
+                  style={{ width: '100%', marginTop: '8px' }}
+                  title={muteAudio ? 'Audio will NOT be included in the recording' : 'Audio from the original video will be included (if available)'}
+                >
+                  {muteAudio ? 'AUDIO MUTED' : 'AUDIO ON'}
+                </button>
+              )}
           </div>
 
-         {!opencvReady && (
-           <div className="cv-warning">
-             ⚡ OpenCV loading...
-           </div>
-         )}
+          {!opencvReady && (
+            <div className="cv-warning">
+              OPENCV LOADING...
+            </div>
+          )}
       </aside>
 
       <div className="canvas-area">
