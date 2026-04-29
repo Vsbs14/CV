@@ -101,7 +101,12 @@ export default function ImageProcessor({ opencvReady, onEdgeData, onOpenDesmos }
       setError('No file selected')
       return
     }
-    if (!file.type.startsWith('image/')) {
+    // Check MIME type and file extension for image files
+    const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/gif', 'image/bmp', 'image/tiff']
+    const allowedExts = ['.png', '.jpg', '.jpeg', '.webp', '.gif', '.bmp', '.tiff', '.tif']
+    const isAllowedType = allowedTypes.includes(file.type) || file.type.startsWith('image/')
+    const hasAllowedExt = allowedExts.some(ext => file.name.toLowerCase().endsWith(ext))
+    if (!isAllowedType && !hasAllowedExt) {
       setError(ERRORS.INVALID_FILE_TYPE)
       return
     }
@@ -351,11 +356,11 @@ export default function ImageProcessor({ opencvReady, onEdgeData, onOpenDesmos }
             >
               <span className="drop-icon">⊕</span>
               <span className="drop-label">DROP IMAGE<br/>OR CLICK TO BROWSE</span>
-              <span className="drop-sub">PNG, JPG, WEBP, GIF</span>
+              <span className="drop-sub">PNG, JPG, WEBP, GIF, BMP, TIFF</span>
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*"
+                accept="image/png,image/jpeg,image/jpg,image/webp,image/gif,.png,.jpg,.jpeg,.webp,.gif"
                 style={{ display: 'none' }}
                 onChange={(e) => handleFile(e.target.files[0])}
               />

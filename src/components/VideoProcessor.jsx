@@ -27,6 +27,7 @@ export default function VideoProcessor({ opencvReady }) {
   const [isWebcam, setIsWebcam] = useState(false)
   const [isRecording, setIsRecording] = useState(false)
   const [error, setError] = useState(null)
+  const [muteAudio, setMuteAudio] = useState(false) // Option to mute audio before download
   // Mobile accordion state (remembered)
   const [inputCollapsed, setInputCollapsed] = useState(() => {
     const saved = localStorage.getItem('cv_vid_input_collapsed')
@@ -71,19 +72,6 @@ export default function VideoProcessor({ opencvReady }) {
     localStorage.setItem('cv_vid_t2', threshold2)
     localStorage.setItem('cv_vid_blur', blurAmount)
   }, [algorithm, threshold1, threshold2, blurAmount])
-
-  // Persist accordion state
-  useEffect(() => {
-    localStorage.setItem('cv_vid_input_collapsed', JSON.stringify(inputCollapsed))
-  }, [inputCollapsed])
-
-  useEffect(() => {
-    localStorage.setItem('cv_vid_algo_collapsed', JSON.stringify(algoCollapsed))
-  }, [algoCollapsed])
-
-  useEffect(() => {
-    localStorage.setItem('cv_vid_params_collapsed', JSON.stringify(paramsCollapsed))
-  }, [paramsCollapsed])
 
   const processFrame = useCallback(() => {
     if (!opencvReady || !window.cv || !videoRef.current) {
@@ -250,14 +238,95 @@ export default function VideoProcessor({ opencvReady }) {
 
   const startRecording = useCallback(() => {
     const canvas = outputCanvasRef.current
+    const video = videoRef.current
     if (!canvas) {
       setError('Output canvas not available')
       return
     }
 
     recordedChunksRef.current = []
-    const stream = canvas.captureStream(VIDEO_FRAME_RATE)
     
+    // Capture canvas stream for video frames
+    const canvasStream = canvas.captureStream(VIDEO_FRAME_RATE)
+    
+    // Try to combine with audio from source video if available and not muted
+    if (video && !muteAudio && !isWebcam) {
+      try {
+        // Method 1: Try captureStream() on video element (Chrome/Firefox)
+        const audioVideo = document.createElement('video')
+        audioVideo.src = video.src
+        audioVideo.muted = false
+        audioVideo.playsInline = true
+        audioVideo.crossOrigin = 'anonymous'
+        
+        audioVideo.onloadedmetadata = () => {
+          try {
+            const audioStream = audioVideo.captureStream ? audioVideo.captureStream() : 
+                                audioVideo.mozCaptureStream ? audioVideo.mozCaptureStream() : null
+            if (audioStream) {
+              const audioTracks = audioStream.getAudioTracks()
+              if (audioTracks.length > 0) {
+                audioTracks.forEach(track => canvasStream.addTrack(track))
+                console.log('Audio track added to recording')
+                startRecordingInternal(canvasStream)
+              } else {
+                // No audio tracks from captureStream, try MediaElementSourceApi
+                tryCaptureAudioMediaElementSource(video, canvasStream)
+              }
+            } else {
+              tryCaptureAudioMediaElementSource(video, canvasStream)
+            }
+          } catch (e) {
+            console.warn('Could not capture audio, trying fallback:', e)
+            tryCaptureAudioMediaElementSource(video, canvasStream)
+          }
+        }
+        
+        audioVideo.onerror = () => {
+          console.warn('Audio video error, trying fallback')
+          tryCaptureAudioMediaElementSource(video, canvasStream)
+        }
+        
+        audioVideo.play().catch(e => {
+          console.warn('Could not play audio video, trying fallback:', e)
+          tryCaptureAudioMediaElementSource(video, canvasStream)
+        })
+      } catch (e) {
+        console.warn('Could not set up audio capture, trying fallback:', e)
+        tryCaptureAudioMediaElementSource(video, canvasStream)
+      }
+    } else {
+      startRecordingInternal(canvasStream)
+    }
+
+    function tryCaptureAudioMediaElementSource(sourceVideo, stream) {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext
+        if (!AudioContext) {
+          console.warn('No AudioContext available')
+          startRecordingInternal(stream)
+          return
+        }
+        const audioCtx = new AudioContext()
+        const source = audioCtx.createMediaElementSource(sourceVideo)
+        const dest = audioCtx.createMediaStreamDestination()
+        source.connect(dest)
+        source.connect(audioCtx.destination)
+        
+        const audioTracks = dest.stream.getAudioTracks()
+        if (audioTracks.length > 0) {
+          audioTracks.forEach(track => stream.addTrack(track))
+          console.log('Audio track added via MediaElementSource')
+        }
+        startRecordingInternal(stream)
+      } catch (e) {
+        console.warn('Could not capture audio via MediaElementSource:', e)
+        startRecordingInternal(stream)
+      }
+    }
+  }, [muteAudio, isWebcam])
+
+  const startRecordingInternal = useCallback((stream) => {
     let options = { mimeType: VIDEO_CODEC_PREFERENCES[0] }
     if (typeof MediaRecorder.isTypeSupported === 'function') {
       let foundCodec = false
@@ -320,7 +389,12 @@ export default function VideoProcessor({ opencvReady }) {
       setError('No file selected')
       return
     }
-    if (!file.type.startsWith('video/')) {
+    // Check MIME type and file extension for video files
+    const allowedTypes = ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo', 'video/mpeg', 'video/ogg']
+    const allowedExts = ['.mp4', '.webm', '.mov', '.avi', '.mpeg', '.mpg', '.ogv']
+    const isAllowedType = file.type.startsWith('video/') || allowedTypes.some(t => file.type === t)
+    const hasAllowedExt = allowedExts.some(ext => file.name.toLowerCase().endsWith(ext))
+    if (!isAllowedType && !hasAllowedExt) {
       setError(ERRORS.INVALID_FILE_TYPE)
       return
     }
@@ -433,7 +507,7 @@ export default function VideoProcessor({ opencvReady }) {
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="video/*"
+                  accept="video/mp4,video/webm,video/quicktime,video/x-msvideo,.mp4,.webm,.mov,.avi"
                   style={{ display: 'none' }}
                   onChange={e => handleFile(e.target.files[0])}
                 />
@@ -535,18 +609,28 @@ export default function VideoProcessor({ opencvReady }) {
         )}
       </div>
 
-      <div className="controls-section controls-exports">
-           {processing && (
-             <button 
-               className={`btn ${isRecording ? 'danger' : ''}`} 
-               onClick={toggleRecording} 
-               style={{ width: '100%' }}
-               title="Record the output to a video file"
-             >
-               {isRecording ? '◼ STOP RECORDING' : '⏺ RECORD VIDEO'}
-             </button>
-           )}
-         </div>
+        <div className="controls-section controls-exports">
+            {processing && (
+              <button 
+                className={`btn ${isRecording ? 'danger' : ''}`} 
+                onClick={toggleRecording} 
+                style={{ width: '100%' }}
+                title="Record the output to a video file"
+              >
+                {isRecording ? '◼ STOP RECORDING' : '⏺ RECORD VIDEO'}
+              </button>
+            )}
+            {processing && (
+              <button
+                className={`btn ${muteAudio ? 'danger' : ''}`}
+                onClick={() => setMuteAudio(!muteAudio)}
+                style={{ width: '100%', marginTop: '8px' }}
+                title={muteAudio ? 'Audio will NOT be included in the recording' : 'Audio from the original video will be included (if available)'}
+              >
+                {muteAudio ? '🔇 AUDIO MUTED' : '🔊 AUDIO ON'}
+              </button>
+            )}
+          </div>
 
          {!opencvReady && (
            <div className="cv-warning">
