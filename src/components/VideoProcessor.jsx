@@ -27,6 +27,9 @@ export default function VideoProcessor({ opencvReady }) {
   const [isWebcam, setIsWebcam] = useState(false)
   const [isRecording, setIsRecording] = useState(false)
   const [error, setError] = useState(null)
+  // Mobile accordion state
+  const [inputCollapsed, setInputCollapsed] = useState(() => window.innerWidth <= 640 && !!videoSrc)
+  const [paramsCollapsed, setParamsCollapsed] = useState(() => window.innerWidth <= 640 && !videoSrc)
 
   const videoRef = useRef(null)
   const outputCanvasRef = useRef(null)
@@ -362,37 +365,46 @@ export default function VideoProcessor({ opencvReady }) {
   return (
     <div className="processor">
       <aside className="controls-panel">
-         <div className="controls-section">
-           <div className="panel-label">VIDEO INPUT</div>
-           <button
-             className="btn"
-             style={{ width: '100%', marginBottom: '10px', justifyContent: 'center' }}
-             onClick={startWebcam}
-           >
-             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-               <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>
-             </svg>
-             USE WEBCAM
-           </button>
-          <div
-            className={`drop-zone ${dragOver ? 'drag-over' : ''}`}
-            onDragOver={e => { e.preventDefault(); setDragOver(true) }}
-            onDragLeave={() => setDragOver(false)}
-            onDrop={handleDrop}
-            onClick={() => fileInputRef.current?.click()}
-          >
-             <span className="drop-icon">⊕</span>
-             <span className="drop-label">DROP VIDEO<br/>OR CLICK TO BROWSE</span>
-             <span className="drop-sub">MP4, WEBM, MOV, AVI</span>
-             <input
-               ref={fileInputRef}
-               type="file"
-               accept="video/*"
-               style={{ display: 'none' }}
-               onChange={e => handleFile(e.target.files[0])}
-             />
-           </div>
-         </div>
+        <div className="controls-section">
+          <div className="panel-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }} onClick={() => window.innerWidth <= 640 && setInputCollapsed(!inputCollapsed)}>
+            <span>VIDEO INPUT</span>
+            {window.innerWidth <= 640 && (
+              <span style={{ fontSize: '10px', transition: 'transform 0.2s', transform: inputCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)' }}>▼</span>
+            )}
+          </div>
+          {(!inputCollapsed || window.innerWidth > 640) && (
+            <>
+              <button
+                className="btn"
+                style={{ width: '100%', marginBottom: '10px', justifyContent: 'center' }}
+                onClick={startWebcam}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>
+                </svg>
+                USE WEBCAM
+              </button>
+              <div
+                className={`drop-zone ${dragOver ? 'drag-over' : ''}`}
+                onDragOver={e => { e.preventDefault(); setDragOver(true) }}
+                onDragLeave={() => setDragOver(false)}
+                onDrop={handleDrop}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <span className="drop-icon">⊕</span>
+                <span className="drop-label">DROP VIDEO<br/>OR CLICK TO BROWSE</span>
+                <span className="drop-sub">MP4, WEBM, MOV, AVI</span>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="video/*"
+                  style={{ display: 'none' }}
+                  onChange={e => handleFile(e.target.files[0])}
+                />
+              </div>
+            </>
+          )}
+        </div>
 
          <div className="controls-section">
            <div className="panel-label">ALGORITHM</div>
@@ -438,8 +450,15 @@ export default function VideoProcessor({ opencvReady }) {
          </div>
 
          <div className="controls-section">
-           <div className="panel-label">PARAMETERS</div>
-          {algorithm === 'canny' && (
+           <div className="panel-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }} onClick={() => window.innerWidth <= 640 && setParamsCollapsed(!paramsCollapsed)}>
+             <span>PARAMETERS</span>
+             {window.innerWidth <= 640 && (
+               <span style={{ fontSize: '10px', transition: 'transform 0.2s', transform: paramsCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)' }}>▼</span>
+             )}
+           </div>
+           {(!paramsCollapsed || window.innerWidth > 640) && (
+             <>
+           {algorithm === 'canny' && (
             <>
               <div className="param-row">
                 <span className="param-label" title="Minimum intensity gradient. Gradients below this are ignored as noise.">
@@ -465,11 +484,13 @@ export default function VideoProcessor({ opencvReady }) {
             </span>
             <span className="param-value">{blurAmount % 2 === 0 ? blurAmount + 1 : blurAmount}×{blurAmount % 2 === 0 ? blurAmount + 1 : blurAmount}</span>
           </div>
-          <input type="range" min={MIN_BLUR_KERNEL} max={MAX_BLUR_KERNEL} step={BLUR_KERNEL_STEP} value={blurAmount}
-            onChange={e => setBlurAmount(+e.target.value)} />
-         </div>
+            <input type="range" min={MIN_BLUR_KERNEL} max={MAX_BLUR_KERNEL} step={BLUR_KERNEL_STEP} value={blurAmount}
+              onChange={e => setBlurAmount(+e.target.value)} />
+          </>
+        )}
+      </div>
 
-         <div className="controls-section controls-exports">
+      <div className="controls-section controls-exports">
            {processing && (
              <button 
                className={`btn ${isRecording ? 'danger' : ''}`} 

@@ -37,6 +37,9 @@ export default function ImageProcessor({ opencvReady, onEdgeData, onOpenDesmos }
   const [edgePaths, setEdgePaths] = useState(null)
   const [error, setError] = useState(null)
   const [stats, setStats] = useState(null)
+  // Mobile accordion state
+  const [inputCollapsed, setInputCollapsed] = useState(() => window.innerWidth <= 640 && !!imageSrc)
+  const [paramsCollapsed, setParamsCollapsed] = useState(() => window.innerWidth <= 640 && !imageSrc)
 
   const inputCanvasRef = useRef(null)
   const outputCanvasRef = useRef(null)
@@ -318,25 +321,32 @@ export default function ImageProcessor({ opencvReady, onEdgeData, onOpenDesmos }
       {/* Left: Controls */}
       <aside className="controls-panel">
         <div className="controls-section">
-          <div className="panel-label">INPUT</div>
-          <div
-            className={`drop-zone ${dragOver ? 'drag-over' : ''}`}
-            onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
-            onDragLeave={() => setDragOver(false)}
-            onDrop={handleDrop}
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <span className="drop-icon">⊕</span>
-            <span className="drop-label">DROP IMAGE<br/>OR CLICK TO BROWSE</span>
-            <span className="drop-sub">PNG, JPG, WEBP, GIF</span>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              style={{ display: 'none' }}
-              onChange={(e) => handleFile(e.target.files[0])}
-            />
+          <div className="panel-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }} onClick={() => window.innerWidth <= 640 && setInputCollapsed(!inputCollapsed)}>
+            <span>INPUT</span>
+            {window.innerWidth <= 640 && (
+              <span style={{ fontSize: '10px', transition: 'transform 0.2s', transform: inputCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)' }}>▼</span>
+            )}
           </div>
+          {(!inputCollapsed || window.innerWidth > 640) && (
+            <div
+              className={`drop-zone ${dragOver ? 'drag-over' : ''}`}
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={handleDrop}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <span className="drop-icon">⊕</span>
+              <span className="drop-label">DROP IMAGE<br/>OR CLICK TO BROWSE</span>
+              <span className="drop-sub">PNG, JPG, WEBP, GIF</span>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={(e) => handleFile(e.target.files[0])}
+              />
+            </div>
+          )}
         </div>
 
          <div className="controls-section">
@@ -399,9 +409,15 @@ export default function ImageProcessor({ opencvReady, onEdgeData, onOpenDesmos }
          </div>
 
          <div className="controls-section">
-           <div className="panel-label">PARAMETERS</div>
-
-          {algorithm === 'canny' && (
+           <div className="panel-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }} onClick={() => window.innerWidth <= 640 && setParamsCollapsed(!paramsCollapsed)}>
+             <span>PARAMETERS</span>
+             {window.innerWidth <= 640 && (
+               <span style={{ fontSize: '10px', transition: 'transform 0.2s', transform: paramsCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)' }}>▼</span>
+             )}
+           </div>
+           {(!paramsCollapsed || window.innerWidth > 640) && (
+             <>
+           {algorithm === 'canny' && (
             <>
               <div className="param-row">
                 <span className="param-label" title="Minimum intensity gradient. Gradients below this are ignored as noise.">
@@ -447,11 +463,13 @@ export default function ImageProcessor({ opencvReady, onEdgeData, onOpenDesmos }
             </span>
             <span className="param-value">{simplify.toFixed(1)}</span>
           </div>
-          <input type="range" min={MIN_SIMPLIFY} max={MAX_SIMPLIFY} step={SIMPLIFY_STEP} value={simplify}
-            onChange={e => setSimplify(+e.target.value)} />
-         </div>
+           <input type="range" min={MIN_SIMPLIFY} max={MAX_SIMPLIFY} step={SIMPLIFY_STEP} value={simplify}
+             onChange={e => setSimplify(+e.target.value)} />
+          </>
+        )}
+      </div>
 
-         <div className="controls-section controls-exports">
+      <div className="controls-section controls-exports">
            {hasResult && (
              <>
                <div className="panel-label" style={{ marginTop: '12px' }}>EXPORT</div>
