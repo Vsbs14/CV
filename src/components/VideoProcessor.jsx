@@ -646,14 +646,14 @@ export default function VideoProcessor({ opencvReady }) {
             {!videoSrc && !isWebcam && (
               <div className="canvas-placeholder"><span>NO VIDEO LOADED</span></div>
             )}
-            <video
-              ref={videoRef}
-              src={videoSrc || undefined}
-              style={{ width: '100%', maxWidth: '100%', maxHeight: '100%', display: (videoSrc || isWebcam) ? 'block' : 'none' }}
-              loop
-              playsInline
-              muted
-            />
+             <video
+               ref={videoRef}
+               src={videoSrc || undefined}
+               style={{ width: '100%', maxWidth: '100%', maxHeight: '100%', display: (videoSrc || isWebcam) ? 'block' : 'none' }}
+               loop
+               playsInline
+               muted={muteAudio}
+             />
           </div>
         </div>
 
